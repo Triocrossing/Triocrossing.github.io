@@ -9,7 +9,7 @@ last_name: WANG
 email: xi.wang@lix.polytechnique.fr
 description: 
 footer_text: 
-keywords: vSLAM, 3D Reconstruction, Computational Cinematography, NeRF, Generative Models, Animation 
+keywords: vSLAM, 3D Reconstruction, NeRF, Computational Cinematography, Generative Models, Computer Animation 
 
 lang: en # the language of your site (for example: en, fr, cn, ru, etc.)
 icon:  # the emoji used as the favicon (alternatively, provide image name in /assets/img/)
