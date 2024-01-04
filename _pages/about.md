@@ -1,6 +1,6 @@
 ---
 layout: about
-title: about
+title: About
 permalink: /
 subtitle: 
 # Currently postdoctoral researcher @<a href=https://www.lix.polytechnique.fr/vista/>VISTA</a>, LIX, Ecole Polytechnique. Palaiseau, France, previous Ph.D. at Team Mimetic <a href=https://team.inria.fr/mimetic/>Mimetic</a> of Inria Rennes, IRISA and Univ. Rennes 1.
