@@ -4,7 +4,7 @@ date: 2023-10-10 16:11:00-0400
 inline: true
 related_posts: false
 ---
-Our paper [BluNF](https://www.lix.polytechnique.fr/vista/projects/2023_iccvw_courant/) is presented at __ICCV23'__ [AI3DCC](https://ai3dcc.github.io/) Workshop at Paris.
+Our paper [BluNF](https://www.lix.polytechnique.fr/vista/projects/2023_iccvw_courant/) is presented at __ICCV23'__ [AI3DCC](https://ai3dcc.github.io/) Workshop at Paris, FR.
 
 <!-- Announcements and news can be much longer than just quick inline posts. In fact, they can have all the features available for the standard blog posts. See below.
 
