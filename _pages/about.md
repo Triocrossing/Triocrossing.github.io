@@ -16,6 +16,4 @@ selected_papers: false # includes a list of papers marked as "selected={true}"
 social: false  # includes social icons at the bottom of the page
 ---
 
-I am currently a postdoc researcher at [VISTA](https://www.lix.polytechnique.fr/vista/), LIX, working with [Vicky Kalogeiton](https://vicky.kalogeiton.info). I finished my Ph.D. at Univ Rennes 1, Inria Rennes and IRISA advised by [Marc Christie](https://people.irisa.fr/Marc.Christie/) and [Eric Marchand](https://team.inria.fr/rainbow/fr/team/eric-marchand/).
-
-My research interests lie at the intersection of 3D Vision, Computer Graphics and Generative Models, covering topics such as visual SLAM, computational cinematography, NeRF, generative models and computer animations.
+I am currently a postdoc researcher at @<a href="https://www.lix.polytechnique.fr/vista">VISTA Team</a>, LIX, Ecole Polytechnique, working with [Vicky Kalogeiton](https://vicky.kalogeiton.info). Prior to that, I finished my Ph.D. at Univ Rennes 1, Inria Rennes and IRISA advised by [Marc Christie](https://people.irisa.fr/Marc.Christie/) and [Eric Marchand](https://team.inria.fr/rainbow/fr/team/eric-marchand/). My main research interests lie in generative models, 3D vision and computational cinematography.
