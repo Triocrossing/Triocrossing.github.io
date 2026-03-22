@@ -4,8 +4,11 @@ layout: default
 <!-- page.html -->
 <div class="post">
 
-  <header class="post-header">
+  <header class="post-header{% if page.show_social %} post-header--with-social{% endif %}">
     <h1 class="post-title">{{ page.title }}</h1>
+    {%- if page.show_social -%}
+    <div class="post-header__social">{% include social.html %}</div>
+    {%- endif -%}
     <p class="post-description">{{ page.description }}</p>
   </header>
 
