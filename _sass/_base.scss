@@ -37,10 +37,12 @@ table {
 a,
 table.table a {
   color: var(--global-theme-color);
+  text-decoration-color: var(--global-theme-color);
 
   &:hover {
     color: var(--global-theme-color);
     text-decoration: underline;
+    text-decoration-color: var(--global-theme-color);
   }
 
   &:hover:after :not(.nav-item.dropdown) {
@@ -645,12 +647,7 @@ footer.sticky-bottom {
   }
 
   h2.bibliography {
-    color: var(--global-divider-color);
-    border-top: 1px solid var(--global-divider-color);
-    padding-top: 1rem;
-    margin-top: 2rem;
     margin-bottom: -2rem;
-    text-align: right;
   }
 
   ol.bibliography {

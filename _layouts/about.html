@@ -52,9 +52,11 @@ layout: default
   <!-- ═══ News section ═══ -->
   {%- if page.news and site.announcements.enabled -%}
   <section class="about-news">
-    <h3 class="about-news__heading">News</h3>
+    <div class="about-news__header">
+      <h3 class="about-news__heading">News</h3>
+      <a class="about-news__more" href="{{ '/news/' | relative_url }}">see more &rarr;</a>
+    </div>
     {%- include news.html limit=true %}
-    <a class="about-news__more" href="{{ '/news/' | relative_url }}">see more &rarr;</a>
   </section>
   {%- endif %}
 
@@ -67,3 +69,54 @@ layout: default
   {%- endif %}
 
 </div>
+
+<script>
+(function() {
+  var bio = document.querySelector('.about-hero__bio');
+  if (!bio) return;
+
+  function getTextNodes(node) {
+    var nodes = [];
+    var walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+    var n;
+    while (n = walker.nextNode()) nodes.push(n);
+    return nodes;
+  }
+
+  var textNodes = getTextNodes(bio);
+  var fullTexts = textNodes.map(function(n) {
+    var t = n.textContent;
+    n.textContent = '';
+    return t;
+  });
+
+  bio.classList.add('typewriter-ready');
+
+  var cur = 0, ch = 0, speed = 8;
+
+  var cursor = document.createElement('span');
+  cursor.className = 'typewriter-cursor';
+  cursor.textContent = '|';
+
+  function type() {
+    if (cur >= textNodes.length) {
+      cursor.remove();
+      return;
+    }
+    var node = textNodes[cur];
+    var text = fullTexts[cur];
+    if (ch < text.length) {
+      node.textContent = text.substring(0, ch + 1);
+      node.parentNode.insertBefore(cursor, node.nextSibling);
+      ch++;
+      setTimeout(type, speed);
+    } else {
+      cur++;
+      ch = 0;
+      type();
+    }
+  }
+
+  type();
+})();
+</script>

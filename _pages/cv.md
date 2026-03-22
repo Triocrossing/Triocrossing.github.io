@@ -1,9 +1,10 @@
 ---
 layout: page
 permalink: /cv/
-title: cv
+title: CV
 nav: true
 nav_order: 5
+show_social: true
 # cv_pdf: Shubhankar_Gahlot-11.pdf
 # toc:
 #   sidebar: left
