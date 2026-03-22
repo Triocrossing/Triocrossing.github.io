@@ -1,0 +1,749 @@
+/*===========================================================================
+ * Custom Design System — Xi WANG personal site
+ * Refined academic aesthetic. Impeccable-guided overrides on al-folio.
+ *===========================================================================*/
+
+// ─── Motion tokens ──────────────────────────────────────────────────────────
+
+:root {
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:        cubic-bezier(0.7, 0, 0.84, 0);
+  --dur-instant: 100ms;
+  --dur-fast:    200ms;
+  --dur-normal:  350ms;
+  --dur-slow:    500ms;
+  --dur-reveal:  700ms;
+}
+
+
+// ─── Spacing scale (4 pt base) ─────────────────────────────────────────────
+
+:root {
+  --sp-1:  0.25rem;   // 4px
+  --sp-2:  0.5rem;    // 8px
+  --sp-3:  0.75rem;   // 12px
+  --sp-4:  1rem;      // 16px
+  --sp-6:  1.5rem;    // 24px — vertical rhythm base
+  --sp-8:  2rem;      // 32px
+  --sp-12: 3rem;      // 48px
+  --sp-16: 4rem;      // 64px
+  --sp-24: 6rem;      // 96px
+}
+
+
+// ─── Color tokens (OKLCH — perceptually uniform) ────────────────────────────
+// Neutrals warm-tinted toward brand hue (≈55° amber);
+// chroma low enough to read as neutral, high enough for subconscious cohesion.
+
+:root {
+  --bg:           oklch(97.8% 0.006 65);
+  --bg-2:         oklch(94.5% 0.01  60);
+  --bg-3:         oklch(91%   0.012 58);
+  --text:         oklch(16%   0.015 55);
+  --text-2:       oklch(47%   0.02  55);
+  --text-3:       oklch(66%   0.015 55);
+  --border:       oklch(88%   0.012 55);
+  --border-light: oklch(92%   0.008 55);
+  --accent:       oklch(62%   0.12  65);
+  --accent-hover: oklch(54%   0.14  65);
+  --accent-bg:    oklch(94%   0.035 65);
+}
+
+html[data-theme='dark'] {
+  --bg:           oklch(12%  0.008 55);
+  --bg-2:         oklch(17%  0.01  55);
+  --bg-3:         oklch(22%  0.012 55);
+  --text:         oklch(91%  0.008 55);
+  --text-2:       oklch(65%  0.012 55);
+  --text-3:       oklch(47%  0.01  55);
+  --border:       oklch(24%  0.01  55);
+  --border-light: oklch(20%  0.008 55);
+  --accent:       oklch(73%  0.1   65);
+  --accent-hover: oklch(80%  0.08  65);
+  --accent-bg:    oklch(22%  0.03  65);
+}
+
+
+// ─── Global al-folio variable overrides ────────────────────────────────────
+
+:root {
+  --global-bg-color:           var(--bg);
+  --global-text-color:         var(--text);
+  --global-text-color-light:   var(--text-2);
+  --global-theme-color:        var(--accent);
+  --global-hover-color:        var(--accent-hover);
+  --global-divider-color:      var(--border);
+  --global-footer-bg-color:    var(--bg-2);
+  --global-footer-text-color:  var(--text-2);
+  --global-footer-link-color:  var(--text);
+  --global-card-bg-color:      var(--bg);
+  --global-code-bg-color:      var(--bg-2);
+}
+
+html[data-theme='dark'] {
+  --global-bg-color:           var(--bg);
+  --global-text-color:         var(--text);
+  --global-text-color-light:   var(--text-2);
+  --global-theme-color:        var(--accent);
+  --global-hover-color:        var(--accent-hover);
+  --global-divider-color:      var(--border);
+  --global-footer-bg-color:    var(--bg-2);
+  --global-footer-text-color:  var(--text-2);
+  --global-footer-link-color:  var(--text);
+  --global-card-bg-color:      var(--bg-2);
+  --global-code-bg-color:      var(--bg-2);
+}
+
+
+// ─── Base ───────────────────────────────────────────────────────────────────
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text) !important;
+  background-color: var(--bg) !important;
+  transition: background-color var(--dur-normal) var(--ease-out-quart),
+              color var(--dur-normal) var(--ease-out-quart);
+}
+
+// Reduce font weight in dark mode for better readability
+html[data-theme='dark'] body { font-weight: 350; }
+
+p, li, span, div, em, strong, td, th { color: inherit; }
+
+
+// ─── Type scale (perfect fourth — 1.333) ───────────────────────────────────
+// Single font family (Plus Jakarta Sans) with weight contrast for hierarchy.
+// Fluid headings for marketing feel; fixed body for spatial predictability.
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--text);
+  scroll-margin-top: 72px;
+}
+
+h1 { font-size: clamp(2.2rem, 4.5vw, 3rem); font-weight: 700; }
+h2 { font-size: clamp(1.5rem, 3vw, 2rem);   margin-bottom: var(--sp-3); }
+h3 { font-size: 1.35rem; }
+h4 { font-size: 1.05rem; font-weight: 600; letter-spacing: 0; }
+
+p {
+  color: var(--text);
+  margin-bottom: var(--sp-4);
+  max-width: 65ch;
+}
+
+a,
+table.table a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--border);
+  transition: color var(--dur-fast) var(--ease-out-quart),
+              text-decoration-color var(--dur-fast) var(--ease-out-quart);
+
+  &:hover {
+    color: var(--accent-hover);
+    text-decoration-color: var(--accent);
+  }
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: var(--sp-8) 0;
+}
+
+::selection {
+  background: var(--accent-bg);
+  color: var(--text);
+}
+
+
+// ─── Navbar ─────────────────────────────────────────────────────────────────
+
+.navbar {
+  background-color: var(--bg) !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: none !important;
+  height: 62px;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  transition: background-color var(--dur-normal) var(--ease-out-quart),
+              border-color var(--dur-normal) var(--ease-out-quart);
+}
+
+.navbar-light .navbar-brand,
+.navbar-light .navbar-brand:hover,
+.navbar-light .navbar-brand:focus {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: var(--text) !important;
+  text-decoration: none;
+
+  span.font-weight-bold { font-weight: 700; }
+}
+
+.navbar-light .navbar-nav .nav-link {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-2) !important;
+  text-decoration: none;
+  padding: 0 0.7rem !important;
+  line-height: 62px;
+  transition: color var(--dur-fast) var(--ease-out-quart);
+
+  &:hover { color: var(--text) !important; }
+}
+
+.navbar-light .navbar-nav .nav-item.active .nav-link {
+  color: var(--text) !important;
+}
+
+.navbar-light .navbar-toggler {
+  border: none;
+
+  .icon-bar {
+    display: block;
+    width: 20px;
+    height: 1.5px;
+    background-color: var(--text);
+    margin: 5px auto;
+    transition: all var(--dur-fast) var(--ease-out-quart);
+    border-radius: 1px;
+  }
+
+  &:focus { box-shadow: none; outline: none; }
+}
+
+li.toggle-container { list-style: none; }
+
+#light-toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 0.4rem;
+  color: var(--text-2);
+  font-size: 0.8rem;
+  line-height: 62px;
+  vertical-align: middle;
+  transition: color var(--dur-fast) var(--ease-out-quart);
+
+  &:hover { color: var(--accent); }
+  &:focus { outline: none; box-shadow: none; }
+  i { vertical-align: middle; padding: 0 !important; }
+}
+
+:root       .fa-sun  { display: none   !important; }
+:root       .fa-moon { display: inline !important; }
+html[data-theme='dark'] .fa-sun  { display: inline !important; }
+html[data-theme='dark'] .fa-moon { display: none   !important; }
+
+
+// ─── Entrance animations ────────────────────────────────────────────────────
+
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes reveal-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+
+// ─── About / Homepage — Liesinger-inspired layout ───────────────────────────
+
+.about-page {
+  // Remove default .post padding that may interfere
+  .post-header { display: none; }
+}
+
+// ── Hero section: text left, photo right ────────────────────────────────────
+
+.about-hero {
+  display: grid;
+  grid-template-columns: 1fr 0.38fr;
+  gap: var(--sp-6);
+  align-items: stretch;
+  padding: var(--sp-8) 0 var(--sp-6);
+  animation: reveal-up var(--dur-reveal) var(--ease-out-expo) both;
+
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+    padding: var(--sp-6) 0 var(--sp-4);
+  }
+}
+
+.about-hero__text {
+  display: flex;
+  flex-direction: column;
+}
+
+.about-hero__subtitle {
+  font-size: 0.85rem;
+  color: var(--text-2);
+  margin-bottom: var(--sp-4);
+}
+
+.about-hero__bio {
+  p {
+    font-size: clamp(0.88rem, 1.8vw, 1.05rem);
+    line-height: 1.5;
+    color: var(--text);
+    max-width: none;
+    margin-bottom: var(--sp-3);
+
+    a {
+      text-decoration-color: var(--border);
+      &:hover { text-decoration-color: var(--accent); }
+    }
+  }
+}
+
+.about-hero__social {
+  display: flex;
+  gap: var(--sp-4);
+  margin-top: auto;
+  padding-top: var(--sp-3);
+
+  a {
+    color: var(--text-3);
+    font-size: 1.25rem;
+    text-decoration: none;
+    transition: color var(--dur-fast) var(--ease-out-quart);
+
+    &:hover { color: var(--text); }
+  }
+}
+
+// Photo
+.about-hero__photo {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  animation: reveal-up var(--dur-reveal) var(--ease-out-expo) 150ms both;
+
+  @media (max-width: 767px) {
+    max-width: 60%;
+    margin: 0 auto;
+  }
+}
+
+.about-hero__photo .profile {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: 3px;
+
+  figure { margin: 0; }
+}
+
+.profile img {
+  width: 100%;
+  border-radius: 3px;
+  display: block;
+  filter: grayscale(5%);
+  transition: filter var(--dur-slow) var(--ease-out-quart),
+              opacity var(--dur-normal) var(--ease-out-quart);
+}
+
+.profile__caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--sp-6) var(--sp-4) var(--sp-3);
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: oklch(96% 0 0);
+  background: linear-gradient(to top, oklch(10% 0 0 / 0.55), transparent);
+  opacity: 0;
+  transition: opacity var(--dur-normal) var(--ease-out-quart);
+  pointer-events: none;
+}
+
+.about-hero__photo .profile:hover {
+  img {
+    filter: grayscale(0%);
+    opacity: 0.75;
+  }
+  .profile__caption {
+    opacity: 1;
+  }
+}
+
+
+// ── News section ─────────────────────────────────────────────────────────────
+
+.about-news {
+  border-top: 1px solid var(--border);
+  margin-top: var(--sp-2);
+  padding: var(--sp-4) 0 var(--sp-6);
+}
+
+.about-news__heading {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.01em !important;
+  text-transform: none !important;
+  color: var(--text) !important;
+  margin-top: 0 !important;
+  margin-bottom: var(--sp-4) !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+.about-news__more {
+  display: inline-block;
+  margin-top: var(--sp-4);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-2);
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: color var(--dur-fast) var(--ease-out-quart);
+
+  &:hover {
+    color: var(--accent);
+  }
+}
+
+
+// ─── Section sub-headings (News, Latest Posts, etc.) ────────────────────────
+// Keep for non-about pages (publications, blog, etc.)
+
+.post h2,
+.post h2 a {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 0.68rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+  color: var(--text-3) !important;
+  margin-top: var(--sp-12) !important;
+  margin-bottom: var(--sp-4) !important;
+  padding-bottom: var(--sp-2);
+  border-bottom: 1px solid var(--border);
+  text-decoration: none !important;
+  display: block;
+
+  &:hover { color: var(--accent) !important; text-decoration-color: transparent !important; }
+}
+
+// Hide .post h2 inside .about-page (news heading handles it)
+.about-page .post h2 { display: none !important; }
+
+
+// ─── News list ───────────────────────────────────────────────────────────────
+
+.news {
+  .table-responsive { overflow: visible; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: none;
+    font-variant-numeric: tabular-nums;
+
+    tr {
+      border-bottom: 1px solid var(--border-light);
+      animation: reveal-up var(--dur-slow) var(--ease-out-expo) both;
+
+      @for $i from 1 through 15 {
+        &:nth-child(#{$i}) { animation-delay: #{$i * 50}ms; }
+      }
+    }
+    tr:last-child { border-bottom: none; }
+
+    th, td {
+      border: none !important;
+      padding: var(--sp-3) 0 !important;
+      vertical-align: baseline;
+    }
+
+    th[scope="row"] {
+      font-size: 0.72rem;
+      font-weight: 400;
+      color: var(--text-3);
+      white-space: nowrap;
+      padding-right: var(--sp-4) !important;
+      width: auto !important;
+    }
+
+    td {
+      font-size: 0.85rem;
+      color: var(--text);
+
+      a {
+        color: var(--text);
+        font-weight: 500;
+        text-decoration-color: var(--border);
+        &:hover { color: var(--accent-hover); text-decoration-color: var(--accent); }
+      }
+
+      strong { color: var(--text); }
+    }
+  }
+}
+
+// ─── Publications page ───────────────────────────────────────────────────────
+
+.post-header {
+  padding: var(--sp-12) 0 var(--sp-6);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: var(--sp-8);
+
+  .post-title {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 700;
+    margin-bottom: var(--sp-1);
+  }
+
+  .post-description {
+    font-size: 0.875rem;
+    color: var(--text-2);
+    margin-bottom: 0;
+  }
+}
+
+.publications {
+  h2.year {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    margin-top: var(--sp-8);
+    margin-bottom: var(--sp-4);
+    padding-bottom: var(--sp-2);
+    border-bottom: 1px solid var(--border);
+  }
+
+  ol.bibliography {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      padding: var(--sp-6) var(--sp-4);
+      border-radius: 6px;
+      animation: reveal-up var(--dur-slow) var(--ease-out-expo) both;
+      transition: background-color var(--dur-fast) var(--ease-out-quart);
+
+      @for $i from 1 through 20 {
+        &:nth-child(#{$i}) { animation-delay: #{$i * 40}ms; }
+      }
+
+      &:hover {
+        background-color: var(--bg-2);
+      }
+
+      .title {
+        font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: var(--text);
+        line-height: 1.35;
+        margin-bottom: var(--sp-1);
+
+        a { color: var(--text); text-decoration: none;
+          &:hover { color: var(--accent-hover); } }
+      }
+
+      .author {
+        font-size: 0.85rem;
+        color: var(--text-2);
+        margin-bottom: var(--sp-1);
+
+        em, .me, a.me {
+          color: var(--text);
+          font-style: normal;
+          font-weight: 600;
+          text-decoration: none;
+          border-bottom: 1.5px solid var(--accent);
+        }
+      }
+
+      .periodical, .booktitle {
+        font-size: 0.82rem;
+        color: var(--text-3);
+        font-style: italic;
+      }
+
+      .links {
+        margin-top: var(--sp-3);
+
+        a {
+          display: inline-block;
+          font-size: 0.72rem;
+          font-weight: 500;
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          text-decoration: none;
+          color: var(--text-2);
+          border: 1px solid var(--border);
+          border-radius: 2px;
+          padding: 0.18rem 0.55rem;
+          margin-right: var(--sp-1);
+          margin-top: var(--sp-1);
+          transition: border-color var(--dur-fast) var(--ease-out-quart),
+                      color var(--dur-fast) var(--ease-out-quart);
+
+          &:hover {
+            color: var(--accent-hover);
+            border-color: var(--accent);
+          }
+        }
+      }
+
+      abbr a {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        background: var(--accent-bg);
+        color: var(--accent);
+        border: 1px solid var(--accent);
+        border-radius: 2px;
+        padding: 0.12rem 0.45rem;
+        text-decoration: none;
+        text-transform: uppercase;
+        margin-right: var(--sp-2);
+        transition: background var(--dur-fast) var(--ease-out-quart),
+                    color var(--dur-fast) var(--ease-out-quart);
+
+        &:hover { background: var(--accent); color: var(--bg); }
+      }
+    }
+  }
+}
+
+
+// ─── Footer ──────────────────────────────────────────────────────────────────
+
+footer.sticky-bottom,
+footer.fixed-bottom {
+  background-color: var(--bg-2) !important;
+  border-top: 1px solid var(--border) !important;
+  padding: var(--sp-6) 0 !important;
+  margin-top: 0 !important;
+  transition: background-color var(--dur-normal) var(--ease-out-quart),
+              border-color var(--dur-normal) var(--ease-out-quart);
+
+  .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.78rem;
+    color: var(--text-3);
+
+    @media (max-width: 576px) {
+      flex-direction: column;
+      text-align: center;
+      gap: var(--sp-1);
+    }
+  }
+}
+
+
+// ─── Code ────────────────────────────────────────────────────────────────────
+
+code {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+  font-size: 0.875em;
+  font-variant-ligatures: none;
+  background: var(--bg-2);
+  border-radius: 3px;
+  padding: 0.1em 0.4em;
+  color: var(--text);
+  border: none;
+}
+
+pre {
+  background: var(--bg-2);
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  padding: var(--sp-6);
+  overflow-x: auto;
+
+  code { background: none; padding: 0; font-size: 0.85em; }
+}
+
+
+// ─── Blockquote ──────────────────────────────────────────────────────────────
+
+blockquote {
+  border-left: 2px solid var(--accent) !important;
+  background: var(--accent-bg) !important;
+  color: var(--text-2);
+  font-size: 1rem;
+  padding: var(--sp-4) var(--sp-6);
+  margin: var(--sp-6) 0;
+  border-radius: 0 3px 3px 0;
+
+  p { color: var(--text-2); margin-bottom: 0; }
+}
+
+
+// ─── CV PDF embed ─────────────────────────────────────────────────────────────
+
+embed[type="application/pdf"] {
+  border-radius: 3px;
+  border: 1px solid var(--border);
+}
+
+
+// ─── Subtle scrollbar ────────────────────────────────────────────────────────
+
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: var(--bg); }
+::-webkit-scrollbar-thumb  {
+  background: var(--border);
+  border-radius: 3px;
+  &:hover { background: var(--text-3); }
+}
+
+
+// ─── Smooth theme transition ─────────────────────────────────────────────────
+
+body, .navbar, footer {
+  transition: background-color var(--dur-normal) var(--ease-out-quart),
+              border-color var(--dur-normal) var(--ease-out-quart);
+}
+
+
+// ─── Reduced motion (accessibility — required) ──────────────────────────────
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
