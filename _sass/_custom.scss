@@ -645,7 +645,7 @@ html[data-theme='dark'] .fa-moon { display: none   !important; }
     margin: 0;
 
     li {
-      padding: var(--sp-6) var(--sp-4);
+      padding: var(--sp-3) var(--sp-4);
       border-radius: 6px;
       animation: reveal-up var(--dur-slow) var(--ease-out-expo) both;
       transition: background-color var(--dur-fast) var(--ease-out-quart);
