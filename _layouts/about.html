@@ -67,7 +67,7 @@ layout: default
       <a class="about-news__more" href="{{ '/publications/' | relative_url }}">all publications &rarr;</a>
     </div>
     <div class="publications">
-      {% bibliography --query @*[homepage={true}] %}
+      {% bibliography -f {{ site.scholar.bibliography }} --group_by none --query @*[homepage=true]* %}
     </div>
   </section>
 
