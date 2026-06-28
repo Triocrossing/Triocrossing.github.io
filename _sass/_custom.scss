@@ -848,3 +848,8 @@ body, .navbar, footer {
     scroll-behavior: auto !important;
   }
 }
+
+
+// ── News emphasis colors ───────────────────────────────────────────────────
+.news strong, .about-news strong { color: var(--accent); font-weight: 600; }
+.news-num { color: #1f9d74; font-weight: 600; }

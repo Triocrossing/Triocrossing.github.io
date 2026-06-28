@@ -70,8 +70,39 @@ layout: default
 
 </div>
 
+<svg width="0" height="0" aria-hidden="true" style="position:absolute"><filter id="bioDiffuse" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB"><feTurbulence id="bioTurb" type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="2" result="n"/><feDisplacementMap id="bioDisp" in="SourceGraphic" in2="n" scale="42" xChannelSelector="R" yChannelSelector="G" result="d"/><feGaussianBlur id="bioBlur" in="d" stdDeviation="4.2"/></filter></svg>
+<style>
+.about-hero__bio{ position:relative; }
+.bio-grain{ position:absolute; inset:-6px; pointer-events:none; mix-blend-mode:soft-light; opacity:.9;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
+  background-size:160px 160px; }
+.bio-timestep{ position:absolute; top:-1.5em; right:0; font:500 .72rem/1 ui-monospace,Menlo,Consolas,monospace; color:var(--accent,#c75a2b); letter-spacing:.02em; }
+@media (max-width:767px){ .bio-timestep{ top:-1.3em; } }
+</style>
 <script>
-(function(){ var bio=document.querySelector('.about-hero__bio');
-  if(bio){ bio.classList.add('typewriter-ready'); bio.style.animation='reveal-fade .5s var(--ease-out-quart) both'; }
+(function(){
+  var bio=document.querySelector('.about-hero__bio'); if(!bio) return;
+  bio.classList.add('typewriter-ready');
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var disp=document.getElementById('bioDisp'), blur=document.getElementById('bioBlur'), turb=document.getElementById('bioTurb');
+  var p=bio.querySelector('p');
+  var grain=document.createElement('div'); grain.className='bio-grain';
+  var ts=document.createElement('span'); ts.className='bio-timestep'; ts.textContent='t = 1.00';
+  bio.appendChild(grain); bio.appendChild(ts);
+  if(reduce || !disp || !p){ grain.remove(); if(reduce&&ts){ts.remove();} return; }
+  p.style.filter='url(#bioDiffuse)';
+  var D=2000, start=performance.now(), seed=2, lastBoil=0;
+  function frame(now){
+    var e=Math.min(1,(now-start)/D), t=1-e;
+    disp.setAttribute('scale', (42*Math.pow(t,1.3)).toFixed(2));
+    blur.setAttribute('stdDeviation', (4.2*Math.pow(t,1.15)).toFixed(2));
+    if(now-lastBoil>70 && t>0.12){ turb.setAttribute('seed', (++seed)); lastBoil=now; }
+    grain.style.opacity=(0.9*Math.pow(t,0.9)).toFixed(3);
+    p.style.opacity=(0.35+0.65*e).toFixed(3);
+    ts.textContent='t = '+t.toFixed(2);
+    if(e<1) requestAnimationFrame(frame);
+    else { p.style.filter='none'; p.style.opacity=''; grain.remove(); ts.style.transition='opacity .5s'; ts.style.opacity='0'; setTimeout(function(){ts.remove();},600); }
+  }
+  requestAnimationFrame(frame);
 })();
 </script>
