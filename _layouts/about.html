@@ -60,6 +60,17 @@ layout: default
   </section>
   {%- endif %}
 
+  <!-- Recent publications -->
+  <section class="about-pubs" id="publications">
+    <div class="about-news__header">
+      <h3 class="about-news__heading">Recent publications</h3>
+      <a class="about-news__more" href="{{ '/publications/' | relative_url }}">all publications &rarr;</a>
+    </div>
+    <div class="publications">
+      {% bibliography --query @*[homepage={true}] %}
+    </div>
+  </section>
+
   <!-- Social (if enabled) -->
   {%- if page.social -%}
     <div class="social">
