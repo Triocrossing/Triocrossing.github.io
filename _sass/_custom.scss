@@ -851,5 +851,5 @@ body, .navbar, footer {
 
 
 // ── News emphasis colors ───────────────────────────────────────────────────
-.news strong, .about-news strong { color: var(--accent); font-weight: 600; }
-.news-num { color: #1f9d74; font-weight: 600; }
+.news table td strong, .about-news strong, .news strong { color: var(--accent) !important; font-weight: 600; }
+.news-num { color: #1f9d74 !important; font-weight: 600; }
