@@ -1,34 +1,87 @@
-"Adams":
-  - firstname: ["Edwin", "E.", "E. P.", "Edwin Plimpton"]
-    url: https://en.wikipedia.org/wiki/Edwin_Plimpton_Adams
+"Kalogeiton":
+  - firstname: ["Vicky", "V."]
+    url: https://vicky.kalogeiton.info/
 
-"Podolsky":
-  - firstname: ["Boris", "B.", "B. Y.", "Boris Yakovlevich"]
-    url: https://en.wikipedia.org/wiki/Boris_Podolsky
+"Christie":
+  - firstname: ["Marc", "M."]
+    url: https://people.irisa.fr/Marc.Christie/
 
-"Rosen":
-  - firstname: ["Nathan", "N."]
-    url: https://en.wikipedia.org/wiki/Nathan_Rosen
+"Marchand":
+  - firstname: ["Eric", "Éric", "E."]
+    url: https://team.inria.fr/rainbow/fr/team/eric-marchand/
 
-"Bach": 
-  - firstname: ["Johann Sebastian", "J. S."]
-    url: https://en.wikipedia.org/wiki/Johann_Sebastian_Bach
+"Courant":
+  - firstname: ["Robin", "R."]
+    url: https://robincourant.github.io/
 
-  - firstname: ["Carl Philipp Emanuel", "C. P. E."]
-    url: https://en.wikipedia.org/wiki/Carl_Philipp_Emanuel_Bach
+"Dufour":
+  - firstname: ["Nicolas", "N."]
+    url: https://nicolas-dufour.github.io/
 
-"Przibram":
-  - firstname: ["Karl"]
-    url: https://link.springer.com/article/10.1007/s00016-019-00242-z
+"Picard":
+  - firstname: ["David", "D."]
+    url: https://davidpicard.github.io/
 
-"Schrödinger":
-  - firstname: ["Erwin"]
-    url: https://en.wikipedia.org/wiki/Erwin_Schr%C3%B6dinger
+"Andreou":
+  - firstname: ["Nefeli", "N."]
+    url: https://nefeliandreou.github.io/
 
-"Lorentz":
-  - firstname: ["Hendrik Antoon"]
-    url: https://en.wikipedia.org/wiki/Hendrik_Lorentz
+"Shi":
+  - firstname: ["Jinglei", "J."]
+    url: https://jingleishi.github.io/
 
-"Planck":
-  - firstname: ["Max"]
-    url: https://en.wikipedia.org/wiki/Max_Planck
+"Guo":
+  - firstname: ["Heng", "H."]
+    url: https://gh-home.github.io/
+
+"Yin":
+  - firstname: ["Tengjiao", "T."]
+    url: https://www.ethan2k04.icu/
+
+"Tsonis":
+  - firstname: ["Eleftherios", "E."]
+    url: https://eleftsonis.github.io/
+
+"Ghermi":
+  - firstname: ["Ridouane", "R."]
+    url: https://ridouaneg.github.io/
+
+"Laptev":
+  - firstname: ["Ivan", "I."]
+    url: https://www.di.ens.fr/~laptev/
+
+"Zhu":
+  - firstname: ["Yuanzhi", "Y."]
+    url: https://yuanzhi-zhu.github.io/
+
+"Lathuilière":
+  - firstname: ["Stéphane", "St.", "S."]
+    url: https://stelat.eu/
+
+"Abrevaya":
+  - firstname: ["Victoria", "Victoria Fernández", "Victoria Fernandez", "V."]
+    url: https://vabrevaya.github.io/
+
+"Fernández Abrevaya":
+  - firstname: ["Victoria", "V."]
+    url: https://vabrevaya.github.io/
+
+"Cani":
+  - firstname: ["Marie-Paule", "M.-P.", "Marie"]
+    url: https://www.lix.polytechnique.fr/vista/vista-member/marie-paule_cani/
+
+"Chrysanthou":
+  - firstname: ["Yiorgos", "Y."]
+    url: https://www.cs.ucy.ac.cy/~yiorgos/
+
+"Jiang":
+  - firstname: ["Hongda", "H."]
+    url: https://jianghd1996.github.io/
+
+"Liu":
+  - firstname: ["Libin", "L."]
+    url: https://libliu.info/
+
+"Chen":
+  - firstname: ["Baoquan", "B."]
+    url: https://baoquanchen.info/
