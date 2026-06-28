@@ -852,6 +852,6 @@ body, .navbar, footer {
 
 // ── News emphasis colors ───────────────────────────────────────────────────
 .news table td strong, .about-news strong, .news strong { color: var(--accent) !important; font-weight: 600; }
-.news-num { color: #1f9d74 !important; font-weight: 600; }
+.news-num { color: var(--accent) !important; font-weight: 600; }
 
 .navbar-brand .name-zh { font-family: "Songti SC","STSong","SimSun","Noto Serif SC",serif; font-weight: 400; margin-left: .45em; letter-spacing: .03em; }
