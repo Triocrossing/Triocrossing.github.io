@@ -517,7 +517,9 @@ html[data-theme='dark'] .fa-moon { display: none   !important; }
 // ─── News list ───────────────────────────────────────────────────────────────
 
 .news {
-  .table-responsive { overflow: visible; }
+  // Natural height, no inner scroll: the theme's inline max-height (60vw) is too
+  // short on phones and, combined with visible overflow, bleeds over the next section.
+  .table-responsive { overflow: visible; max-height: none !important; }
 
   table {
     width: 100%;
