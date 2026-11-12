@@ -1,4 +1,4 @@
-# Active collaborators shown on the homepage, sorted alphabetically by last name.
+# Active collaborators shown on the homepage (order is shuffled on each page load).
 # Leave `url` empty to show the name without a link.
 - name: Nefeli Andreou
   url: https://nefeliandreou.github.io/

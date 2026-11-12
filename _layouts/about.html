@@ -81,10 +81,21 @@ layout: default
       {%- for c in site.data.collaborators -%}
         <span class="about-collab__item">
           {%- if c.url -%}<a href="{{ c.url }}" target="_blank" rel="external nofollow noopener">{{ c.name }}</a>{%- else -%}{{ c.name }}{%- endif -%}
-          {%- unless forloop.last %}<span class="about-collab__sep" aria-hidden="true"> ·</span>{% endunless -%}
         </span>
       {%- endfor -%}
     </p>
+    <script>
+      (function () {
+        var list = document.querySelector('.about-collab__list');
+        if (!list) return;
+        var items = Array.prototype.slice.call(list.children);
+        for (var i = items.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var t = items[i]; items[i] = items[j]; items[j] = t;
+        }
+        items.forEach(function (el) { list.appendChild(el); });
+      })();
+    </script>
   </section>
   {%- endif %}
 
