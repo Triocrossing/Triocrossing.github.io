@@ -535,7 +535,7 @@ html[data-theme='dark'] .fa-moon { display: none   !important; }
   padding: 1px 2px;
   margin: 0 -2px;
   border-radius: 3px;
-  background: color-mix(in oklch, var(--accent) 10%, transparent);
+  background: color-mix(in oklch, var(--accent) 6%, transparent);
 }
 
 .about-pubs ol.bibliography li > .row { align-items: center; }
