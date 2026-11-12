@@ -117,6 +117,7 @@ layout: default
   <section class="about-news about-collab">
     <div class="about-news__header">
       <h3 class="about-news__heading">Collaborators</h3>
+      <button type="button" class="about-news__more about-collab__shuffle" hidden>in random order &middot; shuffle &#8635;</button>
     </div>
     <p class="about-collab__list">
       {%- for c in site.data.collaborators -%}
@@ -129,12 +130,17 @@ layout: default
       (function () {
         var list = document.querySelector('.about-collab__list');
         if (!list) return;
-        var items = Array.prototype.slice.call(list.children);
-        for (var i = items.length - 1; i > 0; i--) {
-          var j = Math.floor(Math.random() * (i + 1));
-          var t = items[i]; items[i] = items[j]; items[j] = t;
+        function shuffle() {
+          var items = Array.prototype.slice.call(list.children);
+          for (var i = items.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = items[i]; items[i] = items[j]; items[j] = t;
+          }
+          items.forEach(function (el) { list.appendChild(el); });
         }
-        items.forEach(function (el) { list.appendChild(el); });
+        shuffle();
+        var btn = document.querySelector('.about-collab__shuffle');
+        if (btn) { btn.hidden = false; btn.addEventListener('click', shuffle); }
       })();
     </script>
   </section>

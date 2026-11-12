@@ -628,6 +628,14 @@ html[data-theme='dark'] .fa-moon { display: none   !important; }
 
 .about-collab__item { color: var(--text); white-space: nowrap; }
 
+.about-collab__shuffle {
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
 .about-collab__item:not(:last-child)::after {
   content: " ·";
   color: var(--text-2);
