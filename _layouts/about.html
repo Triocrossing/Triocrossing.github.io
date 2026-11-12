@@ -71,6 +71,23 @@ layout: default
     </div>
   </section>
 
+  <!-- Collaborators -->
+  {%- if site.data.collaborators -%}
+  <section class="about-news about-collab">
+    <div class="about-news__header">
+      <h3 class="about-news__heading">Collaborators</h3>
+    </div>
+    <p class="about-collab__list">
+      {%- for c in site.data.collaborators -%}
+        <span class="about-collab__item">
+          {%- if c.url -%}<a href="{{ c.url }}" target="_blank" rel="external nofollow noopener">{{ c.name }}</a>{%- else -%}{{ c.name }}{%- endif -%}
+          {%- unless forloop.last %}<span class="about-collab__sep" aria-hidden="true"> ·</span>{% endunless -%}
+        </span>
+      {%- endfor -%}
+    </p>
+  </section>
+  {%- endif %}
+
   <!-- Social (if enabled) -->
   {%- if page.social -%}
     <div class="social">

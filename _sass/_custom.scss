@@ -489,6 +489,29 @@ html[data-theme='dark'] .fa-moon { display: none   !important; }
 }
 
 
+// ── Collaborators ──────────────────────────────────────────────────────────
+
+.about-collab__list {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 0.4em;
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.9;
+  color: var(--text-2);
+
+  a {
+    color: var(--text);
+    text-decoration: none;
+    &:hover { color: var(--accent); }
+  }
+}
+
+.about-collab__item { color: var(--text); white-space: nowrap; }
+
+.about-collab__sep { color: var(--text-2); opacity: .6; }
+
+
 // ─── Section sub-headings (News, Latest Posts, etc.) ────────────────────────
 // Keep for non-about pages (publications, blog, etc.)
 
