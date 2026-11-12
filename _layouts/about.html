@@ -32,6 +32,46 @@ layout: default
           {%- assign profile_image_class = "img-fluid rounded" -%}
         {%- endif -%}
         {%- capture sizes %}(min-width: {{site.max_width}}) {{ site.max_width | minus: 30 | times: 0.3}}px, (min-width: 576px) 30vw, 95vw"{% endcapture -%}
+        {%- if page.profile.image_fun -%}
+        {%- assign fun_image_path = page.profile.image_fun | prepend: 'assets/img/' -%}
+        <div class="profile profile--flip" role="button" tabindex="0" aria-pressed="false" aria-label="Flip between the casual and the formal photo">
+          <div class="profile__inner">
+            <div class="profile__face profile__face--front">
+              {% include figure.html
+                path=fun_image_path
+                class=profile_image_class
+                sizes=sizes
+                alt="Xi Wang wearing a steampunk top hat"
+                cache_bust=true
+              %}
+            </div>
+            <div class="profile__face profile__face--back">
+              {% include figure.html
+                path=profile_image_path
+                class=profile_image_class
+                sizes=sizes
+                alt="Xi Wang, formal portrait"
+                cache_bust=true
+              %}
+            </div>
+          </div>
+          <span class="profile__prompt" aria-hidden="true"><span class="profile__prompt-text" data-front="make me look more serious" data-back="ok, make me fun again"></span></span>
+        </div>
+        <script>
+          (function () {
+            var card = document.querySelector('.profile--flip');
+            if (!card) return;
+            function flip() {
+              var on = card.classList.toggle('is-flipped');
+              card.setAttribute('aria-pressed', on ? 'true' : 'false');
+            }
+            card.addEventListener('click', flip);
+            card.addEventListener('keydown', function (e) {
+              if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); }
+            });
+          })();
+        </script>
+        {%- else -%}
         <div class="profile">
           {% include figure.html
             path=profile_image_path
@@ -44,6 +84,7 @@ layout: default
           <span class="profile__caption">{{ page.profile.more_info }}</span>
           {%- endif -%}
         </div>
+        {%- endif -%}
       {%- endif -%}
     </div>
     {%- endif -%}
@@ -110,6 +151,7 @@ layout: default
 </div>
 
 <svg width="0" height="0" aria-hidden="true" style="position:absolute"><filter id="bioDiffuse" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB"><feTurbulence id="bioTurb" type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="2" result="n"/><feDisplacementMap id="bioDisp" in="SourceGraphic" in2="n" scale="42" xChannelSelector="R" yChannelSelector="G" result="d"/><feGaussianBlur id="bioBlur" in="d" stdDeviation="4.2"/></filter></svg>
+<script defer src="{{ '/assets/js/pub-toys.js' | relative_url | bust_file_cache }}"></script>
 <style>
 .about-hero__bio{ position:relative; }
 .bio-grain{ position:absolute; inset:-6px; pointer-events:none; mix-blend-mode:soft-light; opacity:.9;
