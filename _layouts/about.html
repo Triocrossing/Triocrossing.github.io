@@ -117,8 +117,12 @@ layout: default
   <section class="about-news about-collab">
     <div class="about-news__header">
       <h3 class="about-news__heading">Collaborators</h3>
-      <button type="button" class="about-news__more about-collab__shuffle" hidden>in random order &middot; shuffle &#8635;</button>
+      <span class="about-collab__actions">
+        <button type="button" class="about-news__more about-collab__shuffle" hidden>in random order &middot; shuffle &#8635;</button>
+        <button type="button" class="about-news__more about-collab__play" hidden>&#9656; play: who wrote what?</button>
+      </span>
     </div>
+    <div class="about-collab__game" aria-live="polite" hidden></div>
     <p class="about-collab__list">
       {%- for c in site.data.collaborators -%}
         <span class="about-collab__item">
@@ -126,21 +130,113 @@ layout: default
         </span>
       {%- endfor -%}
     </p>
+    <!-- paper/author pairs for the guessing game, generated from the bibliography -->
+    <div class="about-collab__data" hidden>
+      {% bibliography -f {{ site.scholar.bibliography }} --group_by none --template bib_data %}
+    </div>
     <script>
       (function () {
+        var section = document.querySelector('.about-collab');
         var list = document.querySelector('.about-collab__list');
-        if (!list) return;
-        function shuffle() {
-          var items = Array.prototype.slice.call(list.children);
-          for (var i = items.length - 1; i > 0; i--) {
+        if (!section || !list) return;
+        function shuffled(arr) {
+          var a = arr.slice();
+          for (var i = a.length - 1; i > 0; i--) {
             var j = Math.floor(Math.random() * (i + 1));
-            var t = items[i]; items[i] = items[j]; items[j] = t;
+            var t = a[i]; a[i] = a[j]; a[j] = t;
           }
-          items.forEach(function (el) { list.appendChild(el); });
+          return a;
+        }
+        function shuffle() {
+          shuffled(Array.prototype.slice.call(list.children)).forEach(function (el) { list.appendChild(el); });
         }
         shuffle();
-        var btn = document.querySelector('.about-collab__shuffle');
-        if (btn) { btn.hidden = false; btn.addEventListener('click', shuffle); }
+        var shuffleBtn = section.querySelector('.about-collab__shuffle');
+        if (shuffleBtn) { shuffleBtn.hidden = false; shuffleBtn.addEventListener('click', shuffle); }
+
+        // ── Guessing game: find the co-authors of a given paper ──
+        // Names are matched on first + last word, ignoring case and accents.
+        function key(name) {
+          var p = name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z\s-]/g, ' ').trim().split(/\s+/);
+          return p[0] + ' ' + p[p.length - 1];
+        }
+        var items = {};
+        Array.prototype.forEach.call(list.children, function (el) { items[key(el.textContent)] = el; });
+        var rounds = [];
+        Array.prototype.forEach.call(section.querySelectorAll('.about-collab__data [data-paper]'), function (el) {
+          var title = el.getAttribute('data-paper'), cut = title.indexOf(':'), who = [];
+          el.getAttribute('data-authors').split('|').forEach(function (n) {
+            if (!n.trim()) return;
+            var k = key(n);
+            if (items[k] && who.indexOf(k) < 0) who.push(k);
+          });
+          if (who.length) rounds.push({ title: cut > 0 && cut < 40 ? title.slice(0, cut) : title, year: el.getAttribute('data-year'), who: who });
+        });
+        Object.keys(items).forEach(function (k) {
+          var joint = rounds.filter(function (r) { return r.who.indexOf(k) >= 0; }).map(function (r) { return r.title; });
+          if (!joint.length) return;
+          var shown = joint.slice(0, 5).map(function (t) { return t.length > 42 ? t.slice(0, 40) + '\u2026' : t; });
+          items[k].title = 'Together on: ' + shown.join(', ') + (joint.length > 5 ? ', and ' + (joint.length - 5) + ' more' : '');
+        });
+
+        var playBtn = section.querySelector('.about-collab__play');
+        var bar = section.querySelector('.about-collab__game');
+        if (!playBtn || !bar || rounds.length < 3) return;
+        playBtn.hidden = false;
+        var ROUNDS = Math.min(5, rounds.length), g = null;
+
+        function esc(s) { return s.replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+        function clearMarks() {
+          Object.keys(items).forEach(function (k) { items[k].classList.remove('is-hit', 'is-miss', 'is-reveal'); });
+        }
+        function button(label, fn) {
+          var b = document.createElement('button');
+          b.type = 'button'; b.className = 'about-collab__gbtn'; b.textContent = label;
+          b.addEventListener('click', fn); return b;
+        }
+        function show(html, buttons) {
+          bar.innerHTML = '<span class="about-collab__q">' + html + '</span>';
+          buttons.forEach(function (b) { bar.appendChild(b); });
+        }
+        function ask() {
+          var r = g.queue[g.i], left = r.who.length - g.found.length;
+          show('<b>' + (g.i + 1) + '/' + ROUNDS + '</b> Who co-authored <em>' + esc(r.title) + '</em> (' + r.year + ') with me? ' +
+            (g.found.length ? left + ' more to find.' : 'Click ' + (left === 1 ? 'the one name' : 'the ' + left + ' names') + '.'),
+            [button('reveal', function () { finish(true); }), button('quit', quit)]);
+        }
+        function startRound() { clearMarks(); shuffle(); g.found = []; g.done = false; ask(); }
+        function finish(revealed) {
+          var r = g.queue[g.i], last = g.i === ROUNDS - 1;
+          g.done = true;
+          r.who.forEach(function (k) { if (g.found.indexOf(k) < 0) items[k].classList.add('is-reveal'); });
+          show((revealed ? 'Here they are.' : '<b>&#10003; All found.</b>'),
+            [button(last ? 'see score' : 'next →', function () { if (last) score(); else { g.i++; startRound(); } }), button('quit', quit)]);
+        }
+        function score() {
+          clearMarks(); g.done = true;
+          show('<b>' + g.hits + ' found</b>, ' + g.misses + ' wrong ' + (g.misses === 1 ? 'guess' : 'guesses') + '. Hover a name to see what we did together.',
+            [button('play again', start), button('close', quit)]);
+        }
+        function start() {
+          g = { queue: shuffled(rounds).slice(0, ROUNDS), i: 0, hits: 0, misses: 0, found: [], done: false };
+          section.classList.add('is-playing'); bar.hidden = false; startRound();
+        }
+        function quit() { g = null; clearMarks(); section.classList.remove('is-playing'); bar.hidden = true; }
+
+        playBtn.addEventListener('click', start);
+        list.addEventListener('click', function (e) {
+          if (!g) return;
+          e.preventDefault();
+          var el = e.target.closest ? e.target.closest('.about-collab__item') : null;
+          if (!el || g.done || el.classList.contains('is-hit') || el.classList.contains('is-miss')) return;
+          var k = key(el.textContent), r = g.queue[g.i];
+          if (r.who.indexOf(k) >= 0) {
+            el.classList.add('is-hit'); g.found.push(k); g.hits++;
+            if (g.found.length === r.who.length) finish(false); else ask();
+          } else {
+            el.classList.add('is-miss'); g.misses++;
+          }
+        });
       })();
     </script>
   </section>

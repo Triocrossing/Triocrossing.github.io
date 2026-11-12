@@ -628,12 +628,88 @@ html[data-theme='dark'] .fa-moon { display: none   !important; }
 
 .about-collab__item { color: var(--text); white-space: nowrap; }
 
-.about-collab__shuffle {
+.about-collab__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 2px var(--sp-4);
+}
+
+.about-collab__shuffle,
+.about-collab__play {
   padding: 0;
   border: none;
   background: none;
   cursor: pointer;
   font-family: inherit;
+}
+
+.about-collab__play { color: var(--accent); }
+
+.about-collab__game {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px var(--sp-3);
+  margin-bottom: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--text-2);
+
+  &[hidden] { display: none; }
+  b { color: var(--accent); font-weight: 600; }
+  em { color: var(--text); font-style: normal; font-weight: 600; }
+}
+
+.about-collab__q { flex: 1 1 240px; }
+
+.about-collab__gbtn {
+  padding: 1px 8px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: none;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+
+  &:hover { color: var(--accent); border-color: var(--accent); }
+}
+
+.about-collab.is-playing {
+  .about-collab__shuffle, .about-collab__play { display: none; }
+
+  .about-collab__item {
+    cursor: pointer;
+    transition: opacity var(--dur-fast) var(--ease-out-quart);
+    a { pointer-events: none; }
+    &:hover { color: var(--accent); a { color: var(--accent); } }
+  }
+  .is-hit, .is-hit a { color: var(--accent); font-weight: 600; cursor: default; }
+  .is-hit::before { content: "\2713\00a0"; }
+  .is-miss {
+    opacity: 0.35;
+    text-decoration: line-through;
+    cursor: default;
+    animation: collab-miss 0.3s var(--ease-out-quart);
+    &:hover, &:hover a { color: var(--text); }
+  }
+  .is-reveal {
+    outline: 1px dashed var(--accent);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+}
+
+@keyframes collab-miss {
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-collab.is-playing .is-miss { animation: none; }
 }
 
 .about-collab__item:not(:last-child)::after {
