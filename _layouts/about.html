@@ -154,36 +154,119 @@ layout: default
 <script defer src="{{ '/assets/js/pub-toys.js' | relative_url | bust_file_cache }}"></script>
 <style>
 .about-hero__bio{ position:relative; }
-.bio-grain{ position:absolute; inset:-6px; pointer-events:none; mix-blend-mode:soft-light; opacity:.9;
+.bio-grain{ position:absolute; inset:-6px; pointer-events:none; mix-blend-mode:soft-light; opacity:0;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23g)'/></svg>");
   background-size:160px 160px; }
-.bio-timestep{ position:absolute; top:-2.1em; right:0; font:600 .95rem/1 ui-monospace,Menlo,Consolas,monospace; color:var(--accent,#c75a2b); letter-spacing:.03em; padding:3px 9px; border:1px solid var(--accent,#c75a2b); border-radius:7px; }
-@media (max-width:767px){ .bio-timestep{ top:-1.9em; font-size:.85rem; } }
+.bio-tok{ border-radius:3px; transition:color .35s, background-color .35s; }
+.bio-tok.is-masked{ color:transparent; background:color-mix(in oklch, var(--text) 16%, transparent); }
+.about-hero__bio a.has-masked{ text-decoration-color:transparent; }
+.bio-ctrl{ position:absolute; top:-2.4em; right:0; display:flex; align-items:center; gap:10px;
+  font:600 .68rem/1 ui-monospace,Menlo,Consolas,monospace; letter-spacing:.02em; opacity:.6; transition:opacity .25s; }
+.bio-ctrl:hover, .bio-ctrl:focus-within, .bio-ctrl.is-playing{ opacity:1; }
+.bio-ctrl__modes{ display:flex; gap:8px; }
+.bio-ctrl__mode{ all:unset; cursor:pointer; padding:3px 0; color:var(--text-3); border-bottom:1px solid transparent; }
+.bio-ctrl__mode:hover{ color:var(--text); }
+.bio-ctrl__mode[aria-pressed="true"]{ color:var(--accent,#c75a2b); border-bottom-color:var(--accent,#c75a2b); }
+.bio-ctrl__mode:focus-visible{ outline:1px solid var(--accent,#c75a2b); outline-offset:2px; }
+.bio-ctrl__t{ min-width:4.9em; text-align:center; color:var(--accent,#c75a2b); padding:3px 6px; border:1px solid var(--accent,#c75a2b); border-radius:6px; }
+.bio-ctrl__range{ -webkit-appearance:none; appearance:none; width:76px; height:14px; margin:0; background:transparent; cursor:pointer; }
+.bio-ctrl__range::-webkit-slider-runnable-track{ height:2px; background:var(--border); border-radius:1px; }
+.bio-ctrl__range::-moz-range-track{ height:2px; background:var(--border); border-radius:1px; }
+.bio-ctrl__range::-webkit-slider-thumb{ -webkit-appearance:none; width:10px; height:10px; margin-top:-4px; border-radius:50%; background:var(--accent,#c75a2b); border:none; }
+.bio-ctrl__range::-moz-range-thumb{ width:10px; height:10px; border-radius:50%; background:var(--accent,#c75a2b); border:none; }
+@media (max-width:767px){ .bio-ctrl{ top:-2.2em; gap:8px; font-size:.64rem; } .bio-ctrl__range{ width:64px; } }
 </style>
 <script>
+// Bio "generation" demo: the paragraph is noised/denoised by a time t in [0,1] (1 = pure noise).
+// Modes: diffusion (whole text at one noise level), masked (tokens unmasked in random order),
+// rollout (chunks denoised left to right inside a sliding window, as in autoregressive video diffusion).
 (function(){
   var bio=document.querySelector('.about-hero__bio'); if(!bio) return;
   bio.classList.add('typewriter-ready');
+  var ps=[].slice.call(bio.querySelectorAll('p')); if(!ps.length) return;
   var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
   var disp=document.getElementById('bioDisp'), blur=document.getElementById('bioBlur'), turb=document.getElementById('bioTurb');
-  var p=bio.querySelector('p');
-  var grain=document.createElement('div'); grain.className='bio-grain';
-  var ts=document.createElement('span'); ts.className='bio-timestep'; ts.textContent='t = 1.00';
-  bio.appendChild(grain); bio.appendChild(ts);
-  if(reduce || !disp || !p){ grain.remove(); if(reduce&&ts){ts.remove();} return; }
-  p.style.filter='url(#bioDiffuse)';
-  var D=2000, start=performance.now(), seed=2, lastBoil=0;
-  function frame(now){
-    var e=Math.min(1,(now-start)/D), t=1-e;
-    disp.setAttribute('scale', (42*Math.pow(t,1.3)).toFixed(2));
-    blur.setAttribute('stdDeviation', (4.2*Math.pow(t,1.15)).toFixed(2));
-    if(now-lastBoil>70 && t>0.12){ turb.setAttribute('seed', (++seed)); lastBoil=now; }
-    grain.style.opacity=(0.9*Math.pow(t,0.9)).toFixed(3);
-    p.style.opacity=(0.35+0.65*e).toFixed(3);
-    ts.textContent='t = '+t.toFixed(2);
-    if(e<1) requestAnimationFrame(frame);
-    else { p.style.filter='none'; p.style.opacity=''; grain.remove(); setTimeout(function(){ ts.style.transition='opacity .6s'; ts.style.opacity='0'; setTimeout(function(){ts.remove();},650); },750); }
+  if(!disp||!blur||!turb) return;
+
+  // one span per word, keeping links and whitespace intact
+  var toks=[];
+  ps.forEach(function(p){
+    var walker=document.createTreeWalker(p, NodeFilter.SHOW_TEXT), nodes=[], n;
+    while((n=walker.nextNode())) nodes.push(n);
+    nodes.forEach(function(node){
+      var frag=document.createDocumentFragment();
+      node.nodeValue.split(/(\s+)/).forEach(function(part){
+        if(!part) return;
+        if(/^\s+$/.test(part)){ frag.appendChild(document.createTextNode(part)); return; }
+        var sp=document.createElement('span'); sp.className='bio-tok'; sp.textContent=part;
+        frag.appendChild(sp); toks.push(sp);
+      });
+      node.parentNode.replaceChild(frag,node);
+    });
+  });
+  var links=[].slice.call(bio.querySelectorAll('a'));
+  var N=toks.length, CHUNK=5, NCH=Math.ceil(N/CHUNK), WIN=0.3, rank=[];
+  function shuffleRank(){
+    var idx=toks.map(function(_,i){return i;});
+    for(var i=N-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)), tmp=idx[i]; idx[i]=idx[j]; idx[j]=tmp; }
+    idx.forEach(function(tok,r){ rank[tok]=r; });
   }
-  requestAnimationFrame(frame);
+  shuffleRank();
+
+  var grain=document.createElement('div'); grain.className='bio-grain'; bio.appendChild(grain);
+  var MODES=[['diffusion','diffusion'],['masked','masked'],['rollout','rollout']];
+  var ctrl=document.createElement('div'); ctrl.className='bio-ctrl';
+  var modesEl=document.createElement('div'); modesEl.className='bio-ctrl__modes'; modesEl.setAttribute('role','group'); modesEl.setAttribute('aria-label','Generation mode');
+  var btns=MODES.map(function(m){
+    var b=document.createElement('button'); b.type='button'; b.className='bio-ctrl__mode'; b.textContent=m[1];
+    b.addEventListener('click',function(){ setMode(m[0]); });
+    modesEl.appendChild(b); return b;
+  });
+  var range=document.createElement('input'); range.type='range'; range.className='bio-ctrl__range';
+  range.min='0'; range.max='1'; range.step='0.01'; range.setAttribute('aria-label','Noise level t');
+  var tEl=document.createElement('span'); tEl.className='bio-ctrl__t';
+  ctrl.appendChild(modesEl); ctrl.appendChild(range); ctrl.appendChild(tEl); bio.appendChild(ctrl);
+
+  var mode='diffusion', t=reduce?0:1, raf=0, seed=2;
+  function clamp01(x){ return x<0?0:x>1?1:x; }
+  function render(){
+    var diff=mode==='diffusion', noisy=diff&&t>0.004;
+    ps.forEach(function(p){ p.style.filter=noisy?'url(#bioDiffuse)':'none'; p.style.opacity=noisy?(0.35+0.65*(1-t)).toFixed(3):''; });
+    if(diff){
+      disp.setAttribute('scale',(42*Math.pow(t,1.3)).toFixed(2));
+      blur.setAttribute('stdDeviation',(4.2*Math.pow(t,1.15)).toFixed(2));
+    }
+    grain.style.opacity=diff?(0.9*Math.pow(t,0.9)).toFixed(3):'0';
+    var prog=1-t;
+    toks.forEach(function(sp,i){
+      sp.classList.toggle('is-masked', mode==='masked' && (rank[i]+0.5)/N<t);
+      // rollout: chunk c is clean once the window has passed it, pure noise before the window reaches it
+      var n=mode==='rollout'?clamp01((Math.floor(i/CHUNK)/NCH-prog*(1+WIN)+WIN)/WIN):0;
+      sp.style.filter=n>0.01?'blur('+(n*4.5).toFixed(1)+'px)':'';
+      sp.style.opacity=n>0.01?(1-0.5*n).toFixed(2):'';
+    });
+    links.forEach(function(a){ a.classList.toggle('has-masked', !!a.querySelector('.is-masked')); });
+    range.value=t; tEl.textContent='t = '+t.toFixed(2);
+    btns.forEach(function(b,i){ b.setAttribute('aria-pressed', MODES[i][0]===mode?'true':'false'); });
+  }
+  function stop(){ if(raf){ cancelAnimationFrame(raf); raf=0; } ctrl.classList.remove('is-playing'); }
+  function play(){
+    stop(); if(reduce){ render(); return; }
+    var D=mode==='rollout'?2800:2000, start=performance.now(), lastBoil=0;
+    ctrl.classList.add('is-playing');
+    (function frame(now){
+      var e=Math.min(1,(now-start)/D); t=1-e;
+      if(mode==='diffusion' && now-lastBoil>70 && t>0.12){ turb.setAttribute('seed',(++seed)); lastBoil=now; }
+      render();
+      if(e<1) raf=requestAnimationFrame(frame); else stop();
+    })(start);
+  }
+  function setMode(m){ mode=m; if(m==='masked') shuffleRank(); play(); }
+  range.addEventListener('input',function(){
+    stop(); t=clamp01(parseFloat(range.value)||0);
+    if(mode==='diffusion') turb.setAttribute('seed',(++seed));
+    render();
+  });
+  render(); play();
 })();
 </script>
