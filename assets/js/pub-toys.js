@@ -382,11 +382,64 @@
     }
   };
 
+  // ── DualHeads: reward tilting fixes rendered text ──────────────────────────
+  var DH_LINES = ['REWARD-TILTED', 'FEW-STEP', 'DIFFUSION', 'MADE SIMPLE'], DH_GLYPHS = '#@%&$?!XZKQW';
+  var dualheads = {
+    init: function (s) { s.m = 0; },
+    draw: function (s, g, w, h, dt) {
+      var on = s.inside || (s.active && Math.floor(s.t / 3) % 2 === 1);
+      s.m = lerp(s.m, on ? 1 : 0, ease(dt, 5));
+      // share of correctly rendered characters follows the reported OCR accuracy
+      var acc = lerp(0.59, 0.92, s.m), fs = Math.min(11, (w - 16) / (13 * 0.62)), lh = (h - 24) / DH_LINES.length;
+      g.font = '600 ' + fs + 'px ' + MONO; g.textAlign = 'left'; g.textBaseline = 'middle';
+      DH_LINES.forEach(function (line, li) {
+        for (var ci = 0; ci < line.length; ci++) {
+          if (line[ci] === ' ') continue;
+          var ok = hash(li * 31 + ci * 7.3) < acc;
+          g.fillStyle = ok ? col.text : col.text3;
+          g.fillText(ok ? line[ci] : DH_GLYPHS[Math.floor(hash(li * 13 + ci + Math.floor(s.t * 6)) * DH_GLYPHS.length)], 8 + ci * fs * 0.62, 22 + lh * (li + 0.5));
+        }
+      });
+      label(g, on ? 'OCR acc 0.92' : 'OCR acc 0.59', 6, 9, on ? col.accent : col.text2);
+      s.say(!s.live() ? s.hint : on ? '<b>reward-tilted</b>: OCR accuracy 0.92, same inference cost' : '4-step base model: OCR accuracy 0.59');
+      return Math.abs(s.m - (on ? 1 : 0)) > 0.01;
+    }
+  };
+
+  // ── CameraVLM: the picture moves against the camera ────────────────────────
+  var cameravlm = {
+    init: function (s) { s.v = -0.8; s.off = 0; },
+    draw: function (s, g, w, h, dt) {
+      var target = s.inside ? (s.px - 0.5) * 2 : s.active ? Math.sin(s.t * 0.9) : -0.8;
+      s.v = lerp(s.v, target, ease(dt, 6));
+      if (s.live()) s.off -= s.v * dt * 46;
+      var v = s.v, still = Math.abs(v) < 0.08;
+      g.lineCap = 'round';
+      for (var i = 0; i < 26; i++) {
+        var depth = 0.35 + hash(i + 0.3) * 0.65;
+        var x = ((hash(i) * w + s.off * depth) % w + w) % w, y = 16 + hash(i * 2.7) * (h - 46);
+        g.strokeStyle = col.text3; g.lineWidth = 1;
+        g.beginPath(); g.moveTo(x, y); g.lineTo(x + v * depth * 11, y); g.stroke();
+        g.fillStyle = col.text; g.beginPath(); g.arc(x, y, 0.8 + depth, 0, TAU); g.fill();
+      }
+      g.save(); g.translate(w / 2, h - 9); g.rotate(v * 0.55);
+      g.fillStyle = col.accent; g.globalAlpha = 0.16;
+      g.beginPath(); g.moveTo(0, -3); g.lineTo(-13, -22); g.lineTo(13, -22); g.fill(); g.globalAlpha = 1;
+      g.fillRect(-5, -3, 10, 7); g.restore();
+      label(g, still ? 'cam still' : v < 0 ? 'cam ← left' : 'cam right →', 6, 9, col.accent);
+      label(g, still ? '' : v < 0 ? 'pixels right →' : '← pixels left', w - 6, 9, col.text2, 'right');
+      s.say(!s.live() ? s.hint : still ? 'camera still, picture still' : 'camera pans <b>' + (v < 0 ? 'left' : 'right') + '</b>, the picture slides <b>' + (v < 0 ? 'right' : 'left') + '</b>');
+      return Math.abs(s.v - target) > 0.01;
+    }
+  };
+
   // ── wire up ────────────────────────────────────────────────────────────────
   readColors();
   new MutationObserver(function () { readColors(); toys.forEach(function (s) { s.dirty = true; }); })
     .observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
+  mount('zhu2026dualheads', 'Interactive: garbled rendered text that reward tilting corrects', 'hover: tilt the 4-step model towards the reward', dualheads);
+  mount('cheng2026cameravlm', 'Interactive: pan a camera and watch the picture move the other way', 'pan the camera: which way does the picture move?', cameravlm);
   mount('xia2025muse', 'Interactive: one landscape re-rendered under different emotions', 'move across: steer the emotion of the scene', muse);
   mount('liu2025fakeparts', 'Interactive: find the locally manipulated region of an image', 'one region is AI-edited. Click where you think it is', fakeparts);
   mount('li2026vertigo', 'Interactive: a camera that loses or keeps its character in frame', 'hover the frame: apply preference optimisation', vertigo);
