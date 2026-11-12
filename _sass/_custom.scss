@@ -530,6 +530,14 @@ html[data-theme='dark'] .fa-moon { display: none   !important; }
 
 // ── Publication toys (homepage) ────────────────────────────────────────────
 
+// own name, lightly highlighted in the homepage list
+.about-pubs ol.bibliography li .author em {
+  padding: 1px 2px;
+  margin: 0 -2px;
+  border-radius: 3px;
+  background: color-mix(in oklch, var(--accent) 10%, transparent);
+}
+
 .about-pubs ol.bibliography li > .row { align-items: center; }
 
 .pub-toy {

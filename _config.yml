@@ -270,7 +270,7 @@ display_categories: ['blockquotes'] # these categories will be displayed on the 
 
 scholar:
 
-  last_name: [WANG]
+  last_name: [Wang, WANG]
   first_name: [Xi, X.]
 
   style: apa
