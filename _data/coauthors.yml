@@ -12,7 +12,7 @@
 
 "Courant":
   - firstname: ["Robin", "R."]
-    url: https://robincourant.github.io/
+    url: https://robincourant.github.io/info/
 
 "Dufour":
   - firstname: ["Nicolas", "N."]
@@ -36,7 +36,7 @@
 
 "Yin":
   - firstname: ["Tengjiao", "T."]
-    url: https://www.ethan2k04.icu/
+    url: https://github.com/Ethan2k04
 
 "Tsonis":
   - firstname: ["Eleftherios", "E."]
@@ -89,3 +89,11 @@
 "Loiseaux":
   - firstname: ["David", "D."]
     url: https://davidlapous.github.io/
+
+"Li":
+  - firstname: ["Mengtian", "M."]
+    url: https://mengtianli.github.io/
+
+"Franchi":
+  - firstname: ["Gianni", "G."]
+    url: https://giannifranchi.github.io/

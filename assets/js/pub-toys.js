@@ -351,8 +351,8 @@
     }
   };
 
-  // ── Soft-Di[M]O: one step versus many ──────────────────────────────────────
-  var DG = 6;
+  // ── Soft-Di[M]O: hard tokens versus soft embeddings ────────────────────────
+  // dimoPixel (a tiny sunset picture) is also used by the Di[M]O toy below.
   function dimoPixel(i, j, hue) {
     var c;
     if (j >= 4) c = mix([40, 84, 150], [255, 190, 120], i === 2 || i === 3 ? 0.55 - (j - 4) * 0.2 : 0.08);
@@ -360,76 +360,194 @@
     if (j < 4 && Math.hypot(i - 2.5, j - 2.6) < 1.2) c = [255, 226, 130];
     return hue ? [c[2], c[0], c[1]] : c;
   }
+  var CODEBOOK = [[232, 86, 70], [244, 160, 60], [240, 212, 90], [96, 184, 120], [70, 140, 220], [150, 100, 200]];
   var dimo = {
-    t0: 2.3,
-    init: function (s) { s.hue = 0; },
-    enter: function (s) { s.t = 0; },
-    click: function (s) { s.t = 0; s.hue = 1 - s.hue; },
     draw: function (s, g, w, h) {
-      var cs = Math.min((w - 24) / 2 / DG, (h - 20) / DG), gw = cs * DG, gap = (w - 2 * gw) / 3;
-      var ph = s.t % 6.5, steps = Math.floor(clamp((ph - 0.5) / 3.2, 0, 1) * 16), fast = clamp((ph - 0.5) / 0.18, 0, 1);
-      for (var side = 0; side < 2; side++) {
-        var x0 = gap + side * (gw + gap), y0 = 4;
-        for (var j = 0; j < DG; j++) for (var i = 0; i < DG; i++) {
-          var idx = j * DG + i, shown = side ? fast : (hash(idx * 1.37) * 16 < steps ? 1 : 0);
-          g.fillStyle = col.border; g.fillRect(x0 + i * cs + 0.5, y0 + j * cs + 0.5, cs - 1, cs - 1);
-          if (shown) { g.globalAlpha = shown; g.fillStyle = rgb(dimoPixel(i, j, s.hue)); g.fillRect(x0 + i * cs + 0.5, y0 + j * cs + 0.5, cs - 1, cs - 1); g.globalAlpha = 1; }
-        }
-        var done = side ? fast >= 1 : steps >= 16;
-        label(g, side ? (done ? '1 step ✓' : '1 step') : (done ? 'teacher ✓' : 'teacher · step ' + Math.max(1, steps)), x0 + gw / 2, y0 + gw + 8, side && done ? col.accent : col.text2, 'center', 7.5);
+      // the generator's categorical distribution over codebook entries, peaked at c
+      var K = CODEBOOK.length, c = (s.inside ? s.px : 0.5 - 0.5 * Math.cos(s.t * 0.7)) * (K - 1);
+      var p = [], sum = 0, best = 0, soft = [0, 0, 0], i;
+      for (i = 0; i < K; i++) { p[i] = Math.exp(-Math.pow(i - c, 2) / 0.9); sum += p[i]; }
+      for (i = 0; i < K; i++) {
+        p[i] /= sum; if (p[i] > p[best]) best = i;
+        soft[0] += p[i] * CODEBOOK[i][0]; soft[1] += p[i] * CODEBOOK[i][1]; soft[2] += p[i] * CODEBOOK[i][2];
       }
-      s.say(s.live() ? '<b>one step</b> instead of many · FID 1.56 on ImageNet-256' : s.hint);
+      var bx = 8, bwid = w * 0.42, bw = bwid / K, base = h - 16, top = 18;
+      for (i = 0; i < K; i++) {
+        g.fillStyle = col.border; g.fillRect(bx + i * bw + 1, top, bw - 2, base - top);
+        g.fillStyle = rgb(CODEBOOK[i]); g.fillRect(bx + i * bw + 1, base - (base - top) * p[i] / 0.62, bw - 2, (base - top) * p[i] / 0.62);
+      }
+      label(g, 'p(token)', bx + bwid / 2, h - 7, col.text2, 'center', 7.5);
+      var sx = w * 0.56, sz = Math.min(24, (h - 26) / 2), y1 = 12, y2 = y1 + sz + 10;
+      [[y1, CODEBOOK[best], 'argmax', '∇ blocked', col.text2], [y2, soft, 'soft emb.', '∇ flows', col.accent]].forEach(function (r) {
+        g.strokeStyle = col.text3; g.lineWidth = 1; g.beginPath(); g.moveTo(bx + bwid + 3, r[0] + sz / 2); g.lineTo(sx - 3, r[0] + sz / 2); g.stroke();
+        g.fillStyle = rgb(r[1]); g.fillRect(sx, r[0], sz, sz);
+        label(g, r[2], sx + sz + 5, r[0] + sz / 2 - 5, col.text, 'left', 7.5);
+        label(g, r[3], sx + sz + 5, r[0] + sz / 2 + 5, r[4], 'left', 7.5);
+      });
+      s.say(s.live() ? 'hard tokens jump; the <b>soft embedding</b> blends the codebook, so gradients flow' : s.hint);
     }
   };
 
-  // ── DualHeads: reward tilting fixes rendered text ──────────────────────────
-  var DH_LINES = ['REWARD-TILTED', 'FEW-STEP', 'DIFFUSION', 'MADE SIMPLE'], DH_GLYPHS = '#@%&$?!XZKQW';
+  // Small dark pill with light text, readable on top of a drawn picture.
+  function tag(g, txt, x, y, align, color) {
+    g.font = '600 8px ' + MONO;
+    var tw = g.measureText(txt).width + 8, x0 = align === 'right' ? x - tw : x;
+    g.fillStyle = 'rgba(12,10,8,.62)'; g.fillRect(x0, y - 6, tw, 12);
+    g.textAlign = 'left'; g.textBaseline = 'middle'; g.fillStyle = color || '#fff';
+    g.fillText(txt, x0 + 4, y + 0.5);
+  }
+
+  // ── DualHeads: reward tilting fixes the text in a generated picture ────────
+  var DH_SIGN = [['DUAL HEADS', 1], ['FEW-STEP DIFFUSION', 0.56]], DH_GLYPHS = 'ÆΞЯИΛØЖΣҔЦ';
   var dualheads = {
     init: function (s) { s.m = 0; },
     draw: function (s, g, w, h, dt) {
       var on = s.inside || (s.active && Math.floor(s.t / 3) % 2 === 1);
       s.m = lerp(s.m, on ? 1 : 0, ease(dt, 5));
       // share of correctly rendered characters follows the reported OCR accuracy
-      var acc = lerp(0.59, 0.92, s.m), fs = Math.min(11, (w - 16) / (13 * 0.62)), lh = (h - 24) / DH_LINES.length;
-      g.font = '600 ' + fs + 'px ' + MONO; g.textAlign = 'left'; g.textBaseline = 'middle';
-      DH_LINES.forEach(function (line, li) {
+      var acc = lerp(0.59, 0.92, s.m), i;
+      // shop front: wall, sign board, awning, door and windows
+      var wall = g.createLinearGradient(0, 0, 0, h);
+      wall.addColorStop(0, 'rgb(226,200,164)'); wall.addColorStop(1, 'rgb(198,166,128)');
+      g.fillStyle = wall; g.fillRect(0, 0, w, h);
+      var bx = 9, by = 7, bw = w - 18, bh = h * 0.42;
+      g.fillStyle = 'rgb(120,92,62)'; g.fillRect(bx - 2, by - 2, bw + 4, bh + 4);
+      g.fillStyle = 'rgb(26,66,58)'; g.fillRect(bx, by, bw, bh);
+      var fs = Math.min(15, (bw - 10) / (10 * 0.62));
+      g.textAlign = 'center'; g.textBaseline = 'middle';
+      DH_SIGN.forEach(function (row, li) {
+        var size = fs * row[1], cw = size * 0.62, line = row[0], x0 = w / 2 - (line.length - 1) * cw / 2;
+        g.font = '700 ' + size + 'px ' + MONO;
         for (var ci = 0; ci < line.length; ci++) {
           if (line[ci] === ' ') continue;
           var ok = hash(li * 31 + ci * 7.3) < acc;
-          g.fillStyle = ok ? col.text : col.text3;
-          g.fillText(ok ? line[ci] : DH_GLYPHS[Math.floor(hash(li * 13 + ci + Math.floor(s.t * 6)) * DH_GLYPHS.length)], 8 + ci * fs * 0.62, 22 + lh * (li + 0.5));
+          g.fillStyle = ok ? 'rgb(246,232,200)' : 'rgba(246,232,200,.78)';
+          g.fillText(ok ? line[ci] : DH_GLYPHS[Math.floor(hash(li * 13 + ci + Math.floor(s.t * 1.2)) * DH_GLYPHS.length)], x0 + ci * cw, by + bh * (li ? 0.74 : 0.36));
         }
       });
-      label(g, on ? 'OCR acc 0.92' : 'OCR acc 0.59', 6, 9, on ? col.accent : col.text2);
+      var ay = by + bh + 5, ah = h * 0.11, n = 9, sw = (w + 8) / n;
+      for (i = 0; i < n; i++) { g.fillStyle = i % 2 ? 'rgb(244,238,226)' : 'rgb(190,64,52)'; g.fillRect(-4 + i * sw, ay, sw + 0.5, ah); }
+      var gy = ay + ah + 4, gh = h - gy - 5;
+      [[10, w * 0.3 - 10], [w * 0.7, w * 0.3 - 10]].forEach(function (p) {
+        var glass = g.createLinearGradient(0, gy, 0, gy + gh);
+        glass.addColorStop(0, 'rgb(150,190,214)'); glass.addColorStop(1, 'rgb(92,128,156)');
+        g.fillStyle = 'rgb(120,92,62)'; g.fillRect(p[0] - 1.5, gy - 1.5, p[1] + 3, gh + 3);
+        g.fillStyle = glass; g.fillRect(p[0], gy, p[1], gh);
+      });
+      g.fillStyle = 'rgb(74,50,36)'; g.fillRect(w / 2 - w * 0.09, gy - 2, w * 0.18, gh + 7);
+      g.fillStyle = 'rgb(226,190,110)'; g.beginPath(); g.arc(w / 2 + w * 0.055, gy + gh * 0.55, 1.3, 0, TAU); g.fill();
+      g.fillStyle = 'rgb(120,104,90)'; g.fillRect(0, h - 4, w, 4);
+      tag(g, on ? 'OCR acc 0.92' : 'OCR acc 0.59', 4, h - 9, 'left', on ? 'rgb(255,196,120)' : '#fff');
       s.say(!s.live() ? s.hint : on ? '<b>reward-tilted</b>: OCR accuracy 0.92, same inference cost' : '4-step base model: OCR accuracy 0.59');
       return Math.abs(s.m - (on ? 1 : 0)) > 0.01;
     }
   };
 
   // ── CameraVLM: the picture moves against the camera ────────────────────────
+  function wrap(x, period) { return ((x % period) + period) % period; }
   var cameravlm = {
     init: function (s) { s.v = -0.8; s.off = 0; },
     draw: function (s, g, w, h, dt) {
       var target = s.inside ? (s.px - 0.5) * 2 : s.active ? Math.sin(s.t * 0.9) : -0.8;
       s.v = lerp(s.v, target, ease(dt, 6));
       if (s.live()) s.off -= s.v * dt * 46;
-      var v = s.v, still = Math.abs(v) < 0.08;
-      g.lineCap = 'round';
-      for (var i = 0; i < 26; i++) {
-        var depth = 0.35 + hash(i + 0.3) * 0.65;
-        var x = ((hash(i) * w + s.off * depth) % w + w) % w, y = 16 + hash(i * 2.7) * (h - 46);
-        g.strokeStyle = col.text3; g.lineWidth = 1;
-        g.beginPath(); g.moveTo(x, y); g.lineTo(x + v * depth * 11, y); g.stroke();
-        g.fillStyle = col.text; g.beginPath(); g.arc(x, y, 0.8 + depth, 0, TAU); g.fill();
+      var v = s.v, still = Math.abs(v) < 0.08, o = s.off, x, k;
+      var sky = g.createLinearGradient(0, 0, 0, h * 0.7);
+      sky.addColorStop(0, 'rgb(120,170,224)'); sky.addColorStop(1, 'rgb(244,214,170)');
+      g.fillStyle = sky; g.fillRect(0, 0, w, h);
+      g.fillStyle = 'rgb(255,236,190)'; g.beginPath(); g.arc(wrap(w * 0.7 + o * 0.06, w + 30) - 15, h * 0.3, 7, 0, TAU); g.fill();
+      // far mountains, mid hills with trees, near fence: nearer layers slide faster
+      g.fillStyle = 'rgb(112,128,168)'; g.beginPath(); g.moveTo(0, h);
+      for (x = 0; x <= w + 3; x += 3) g.lineTo(x, h * 0.55 - Math.sin((x - o * 0.25) * 0.04) * 8 - Math.sin((x - o * 0.25) * 0.013 + 1) * 10);
+      g.lineTo(w, h); g.fill();
+      function hill(xx) { return h * 0.7 - Math.sin((xx - o * 0.6) * 0.05 + 2) * 5; }
+      g.fillStyle = 'rgb(96,150,96)'; g.beginPath(); g.moveTo(0, h);
+      for (x = 0; x <= w + 3; x += 3) g.lineTo(x, hill(x));
+      g.lineTo(w, h); g.fill();
+      g.fillStyle = 'rgb(40,92,66)';
+      for (k = 0; k < 6; k++) {
+        var tx = wrap(k * 37 + hash(k) * 14 + o * 0.6, w + 24) - 12, ty = hill(tx) + 2, th = 12 + hash(k + 0.4) * 7;
+        g.beginPath(); g.moveTo(tx, ty - th); g.lineTo(tx - 5, ty); g.lineTo(tx + 5, ty); g.fill();
       }
-      g.save(); g.translate(w / 2, h - 9); g.rotate(v * 0.55);
-      g.fillStyle = col.accent; g.globalAlpha = 0.16;
-      g.beginPath(); g.moveTo(0, -3); g.lineTo(-13, -22); g.lineTo(13, -22); g.fill(); g.globalAlpha = 1;
-      g.fillRect(-5, -3, 10, 7); g.restore();
-      label(g, still ? 'cam still' : v < 0 ? 'cam ← left' : 'cam right →', 6, 9, col.accent);
-      label(g, still ? '' : v < 0 ? 'pixels right →' : '← pixels left', w - 6, 9, col.text2, 'right');
+      g.fillStyle = 'rgb(134,104,70)'; g.fillRect(0, h * 0.86, w, h * 0.14);
+      g.fillStyle = 'rgb(236,226,206)'; g.fillRect(0, h * 0.8, w, 1.5);
+      for (k = 0; k < 12; k++) g.fillRect(wrap(k * 16 + o * 1.25, w + 16) - 8, h * 0.76, 2.5, h * 0.12);
+      if (!still) {
+        var ax = w / 2, ay = h * 0.5, d = v < 0 ? 1 : -1, len = 9 + Math.abs(v) * 9;
+        g.strokeStyle = 'rgba(255,255,255,.9)'; g.fillStyle = 'rgba(255,255,255,.9)'; g.lineWidth = 2; g.lineCap = 'round';
+        g.beginPath(); g.moveTo(ax - d * len, ay); g.lineTo(ax + d * len, ay); g.stroke();
+        g.beginPath(); g.moveTo(ax + d * (len + 5), ay); g.lineTo(ax + d * len, ay - 4); g.lineTo(ax + d * len, ay + 4); g.fill();
+      }
+      tag(g, still ? 'camera still' : v < 0 ? 'camera ← left' : 'camera right →', 4, 9, 'left', 'rgb(255,196,120)');
       s.say(!s.live() ? s.hint : still ? 'camera still, picture still' : 'camera pans <b>' + (v < 0 ? 'left' : 'right') + '</b>, the picture slides <b>' + (v < 0 ? 'right' : 'left') + '</b>');
       return Math.abs(s.v - target) > 0.01;
+    }
+  };
+
+  // ── Di[M]O: many teacher steps distilled into one ──────────────────────────
+  var dimoDistill = {
+    init: function (s) { s.m = 0; },
+    draw: function (s, g, w, h, dt) {
+      var on = s.inside || (s.active && Math.floor(s.t / 3.5) % 2 === 1);
+      s.m = lerp(s.m, on ? 1 : 0, ease(dt, 5));
+      var m = s.m, G = 4, cs = Math.min(9, (h - 30) / G), gw = cs * G, y0 = (h - gw) / 2 + 3, xl = 8, xr = w - 8 - gw, i, j;
+      for (j = 0; j < G; j++) for (i = 0; i < G; i++) {
+        // student input: masks mixed with random tokens; teacher input: all masks
+        var rnd = hash(i * 5.3 + j * 9.1) < 0.45;
+        g.fillStyle = col.border; g.fillRect(xl + i * cs + 0.5, y0 + j * cs + 0.5, cs - 1, cs - 1);
+        if (rnd) { g.globalAlpha = m; g.fillStyle = rgb(dimoPixel(Math.floor(hash(i + j * 4.7) * 6), Math.floor(hash(i * 3.1 + j) * 6))); g.fillRect(xl + i * cs + 0.5, y0 + j * cs + 0.5, cs - 1, cs - 1); g.globalAlpha = 1; }
+        g.fillStyle = rgb(dimoPixel(Math.round(i * 5 / 3), Math.round(j * 5 / 3))); g.fillRect(xr + i * cs + 0.5, y0 + j * cs + 0.5, cs - 1, cs - 1);
+      }
+      var x1 = xl + gw + 5, x2 = xr - 5, cy = y0 + gw / 2, K = 9, run = fract(s.t / 2.2);
+      for (i = 0; i < K; i++) {
+        var q = (i + 0.5) / K, px = lerp(x1, x2, q), py = cy + Math.sin(q * TAU * 1.5) * 9 * (1 - m);
+        g.globalAlpha = 1 - m; g.fillStyle = Math.floor(run * K) === i ? col.accent : col.text3;
+        g.beginPath(); g.arc(px, py, 1.8, 0, TAU); g.fill();
+      }
+      g.globalAlpha = m; g.strokeStyle = col.accent; g.fillStyle = col.accent; g.lineWidth = 1.6;
+      g.beginPath(); g.moveTo(x1, cy); g.lineTo(x2 - 4, cy); g.stroke();
+      g.beginPath(); g.moveTo(x2, cy); g.lineTo(x2 - 6, cy - 4); g.lineTo(x2 - 6, cy + 4); g.fill();
+      g.globalAlpha = 1;
+      label(g, on ? '1 step' : 'teacher: many steps', w / 2, 9, on ? col.accent : col.text2, 'center');
+      s.say(!s.live() ? s.hint : on ? '<b>distilled</b>: one step, from masks mixed with random tokens' : 'masked diffusion teacher: many unmasking steps');
+      return Math.abs(s.m - (on ? 1 : 0)) > 0.01;
+    }
+  };
+
+  // ── AKiRa: optical controls, zoom and bokeh ────────────────────────────────
+  var akira = {
+    draw: function (s, g, w, h) {
+      var fx = s.inside ? s.px : 0.5 + 0.5 * Math.sin(s.t * 0.7), ap = s.inside ? 1 - s.py : 0.5 + 0.5 * Math.sin(s.t * 1.1 + 1);
+      var zoom = lerp(1, 1.9, fx), cx = w / 2, cy = h * 0.55;
+      var hues = [[255, 196, 110], [255, 140, 120], [150, 190, 255], [255, 230, 170]];
+      for (var i = 0; i < 12; i++) {
+        var x = cx + (hash(i) - 0.5) * w * 1.1 * zoom, y = cy + (hash(i * 3.7) - 0.62) * h * 0.9 * zoom;
+        g.fillStyle = rgb(hues[i % 4], lerp(0.95, 0.32, ap));
+        g.beginPath(); g.arc(x, y, (1.6 + ap * 6.5) * zoom, 0, TAU); g.fill();
+      }
+      figure(g, cx, cy + h * 0.2 * zoom, h * 0.36 * zoom, 0, col.text);
+      label(g, Math.round(lerp(24, 85, fx)) + 'mm', 6, 9, col.accent);
+      label(g, 'f/' + lerp(16, 1.4, ap).toFixed(1), w - 6, 9, col.accent, 'right');
+    }
+  };
+
+  // ── CFG schedulers: constant versus increasing guidance ────────────────────
+  var cfg = {
+    draw: function (s, g, w, h) {
+      var k = s.inside ? s.px : 0.5 - 0.5 * Math.cos(s.t * 0.8);
+      var x0 = 10, x1 = w - 8, yb = h - 12, yt = 20, mid = (yb + yt) / 2 + 4;
+      function wy(q) { return lerp(mid, lerp(yb - 3, yt, q), k); }
+      g.strokeStyle = col.border; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(x0, yt - 4); g.lineTo(x0, yb); g.lineTo(x1, yb); g.stroke();
+      g.setLineDash([3, 3]); g.strokeStyle = col.text3;
+      g.beginPath(); g.moveTo(x0, mid); g.lineTo(x1, mid); g.stroke(); g.setLineDash([]);
+      g.strokeStyle = col.accent; g.lineWidth = 1.8;
+      g.beginPath(); g.moveTo(x0, wy(0)); g.lineTo(x1, wy(1)); g.stroke();
+      var q = fract(s.t / 2.5);
+      g.fillStyle = col.accent; g.beginPath(); g.arc(lerp(x0, x1, q), wy(q), 2.6, 0, TAU); g.fill();
+      label(g, k < 0.2 ? 'constant ω' : 'increasing ω(t)', 6, 9, k < 0.2 ? col.text2 : col.accent);
+      label(g, 'noise → image', (x0 + x1) / 2, h - 5, col.text3, 'center', 7);
+      s.say(!s.live() ? s.hint : k < 0.2 ? 'constant guidance weight: the usual default' : '<b>increasing guidance</b>: a one-line change that consistently helps');
     }
   };
 
@@ -447,7 +565,10 @@
   mount('tsonis2026scent', 'Interactive: an electronic nose moving between odour sources', 'move the e-nose: language names what the image cannot show', scent);
   mount('ghermi2024short', 'Interactive: scrub a film strip to answer a story-level question', 'scrub the film: can you answer before the end?', sf20k);
   mount('courant2025pulpmotion', 'Interactive: a camera following an actor to keep the framing', 'move the actor: the jointly generated camera keeps the framing', pulp);
-  mount('zhu2025softdimo', 'Interactive: one-step generation racing a multi-step teacher', 'hover: race the multi-step teacher', dimo);
+  mount('zhu2025softdimo', 'Interactive: a token distribution turned into a hard token or a soft embedding', 'slide: shift the token distribution, compare hard and soft', dimo);
+  mount('zhu2025di', 'Interactive: a multi-step masked diffusion teacher distilled into one step', 'hover: distil the many-step teacher into one step', dimoDistill);
+  mount('wang2024akira', 'Interactive: change focal length and aperture of a virtual lens', 'move: focal length (left-right) and aperture (up-down)', akira);
+  mount('wang2024analysis', 'Interactive: a guidance weight schedule from constant to increasing', 'slide right: from constant to increasing guidance', cfg);
 
   requestAnimationFrame(loop);
 })();
